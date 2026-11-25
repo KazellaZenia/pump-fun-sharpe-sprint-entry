@@ -240,9 +240,12 @@ export function createSprayEarlyBot(): {
         // Stale: its pump already happened; skip forever.
         continue;
       }
-      if (state.committedPositionCount() >= MAX_POSITIONS) continue;
+      // No slot can free inside this batch (the count only grows as we
+      // place buys), so once full, no later mint can be bought either.
+      if (state.committedPositionCount() >= MAX_POSITIONS) break;
+      // Free cash likewise only shrinks inside a batch as buys are placed.
       if (state.freeCashLamports() < STAKE_LAMPORTS + state.txFeeLamports()) {
-        continue;
+        break;
       }
       orderCounter++;
       const clientId = `b${orderCounter}`;
